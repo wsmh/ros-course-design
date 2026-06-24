@@ -6,6 +6,8 @@ import random
 from dataclasses import dataclass
 from typing import List, Optional
 
+from gazebo_msgs.msg import EntityState
+from gazebo_msgs.srv import SetEntityState
 import rclpy
 from rclpy.node import Node
 
@@ -44,6 +46,7 @@ class ChargingSchedulerNode(Node):
         self.declare_parameter("work_area_size", 10.0)
         self.declare_parameter("timer_period", 1.0)
         self.declare_parameter("random_seed", 7)
+        self.declare_parameter("use_gazebo", False)
 
         self.robot_count = int(self.get_parameter("robot_count").value)
         self.low_battery_threshold = float(
@@ -55,6 +58,7 @@ class ChargingSchedulerNode(Node):
         )
         self.work_area_size = float(self.get_parameter("work_area_size").value)
         self.timer_period = float(self.get_parameter("timer_period").value)
+        self.use_gazebo = bool(self.get_parameter("use_gazebo").value)
 
         if self.robot_count <= 5:
             raise ValueError("robot_count must be greater than 5 for this assignment")
@@ -65,9 +69,15 @@ class ChargingSchedulerNode(Node):
         self.tick_count = 0
         self.charging_robot = ChargingRobotState()
         self.robots = self._create_working_robots()
+        self.gazebo_client = None
+        if self.use_gazebo:
+            self.gazebo_client = self.create_client(
+                SetEntityState, "/gazebo/set_entity_state"
+            )
 
         self.get_logger().info("机器人充电调度仿真启动")
         self._log_state("初始状态")
+        self._sync_gazebo_models()
         self.create_timer(self.timer_period, self._on_timer)
 
     def _create_working_robots(self) -> List[RobotState]:
@@ -93,11 +103,13 @@ class ChargingSchedulerNode(Node):
         if target is None:
             self.get_logger().info(f"[第 {self.tick_count} 轮] 所有机器人电量充足")
             self._log_state("当前状态")
+            self._sync_gazebo_models()
             return
 
         self._move_charging_robot_to(target)
         self._charge_robot(target)
         self._log_state(f"第 {self.tick_count} 轮充电完成")
+        self._sync_gazebo_models()
 
     def _move_working_robots(self) -> None:
         """Move each working robot randomly and consume 1%-2% battery per move."""
@@ -188,6 +200,40 @@ class ChargingSchedulerNode(Node):
             ]
         )
         self.get_logger().info(f"{title}: {robot_text}")
+
+    def _sync_gazebo_models(self) -> None:
+        """Synchronize all simulated robot states to Gazebo models."""
+        if not self.use_gazebo or self.gazebo_client is None:
+            return
+
+        if not self.gazebo_client.service_is_ready():
+            self.get_logger().warn("等待 Gazebo /gazebo/set_entity_state 服务就绪")
+            return
+
+        self._set_gazebo_entity_pose(
+            "charging_robot", self.charging_robot.x, self.charging_robot.y, 0.03
+        )
+        for robot in self.robots:
+            self._set_gazebo_entity_pose(
+                f"working_robot_{robot.robot_id}", robot.x, robot.y, 0.02
+            )
+
+    def _set_gazebo_entity_pose(
+        self, entity_name: str, x: float, y: float, z: float
+    ) -> None:
+        """Send one model pose update request to Gazebo."""
+        if self.gazebo_client is None:
+            return
+
+        request = SetEntityState.Request()
+        request.state = EntityState()
+        request.state.name = entity_name
+        request.state.pose.position.x = x
+        request.state.pose.position.y = y
+        request.state.pose.position.z = z
+        request.state.pose.orientation.w = 1.0
+        request.state.reference_frame = "world"
+        self.gazebo_client.call_async(request)
 
     @staticmethod
     def _distance(x1: float, y1: float, x2: float, y2: float) -> float:

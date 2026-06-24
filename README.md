@@ -1,6 +1,6 @@
 # 机器人充电调度课设
 
-本项目使用 Ubuntu + ROS2 + Python 实现“一个充电机器人给多个工作机器人充电”的仿真。
+本项目使用 Ubuntu + ROS2 + Python + Gazebo 实现“一个充电机器人给多个工作机器人充电”的图形仿真。
 
 ## 题目要求对应关系
 
@@ -9,6 +9,7 @@
 - 每次移动随机消耗 1%-2% 电量：在 `_move_working_robots()` 中实现。
 - 充电机器人移动不耗电：充电机器人只更新坐标，不维护自身电量。
 - 根据剩余电量计划充电顺序：在 `_choose_next_target()` 和 `_priority_score()` 中实现。
+- Gazebo 图形仿真：蓝色圆柱表示工作机器人，橙红色圆柱表示充电机器人。
 
 ## 调度策略
 
@@ -26,12 +27,46 @@ priority = 当前电量 + 预计剩余移动次数 * 2.0 + 充电机器人到目
 
 分数越低，说明越紧急，越优先充电。这个策略同时考虑了低电量风险和充电机器人移动距离。
 
-## 在 Ubuntu ROS2 中运行
+## 安装依赖
+
+假设你使用 ROS2 Humble：
+
+```bash
+sudo apt update
+sudo apt install ros-humble-gazebo-ros-pkgs python3-colcon-common-extensions
+```
+
+如果你使用其他 ROS2 版本，把 `humble` 替换成你的版本名。
+
+## 运行 Gazebo 图形仿真
+
+在本工作区根目录运行：
+
+```bash
+source /opt/ros/humble/setup.bash
+colcon build
+source install/setup.bash
+ros2 launch robot_charging_scheduler charging_gazebo.launch.py
+```
+
+运行后会打开 Gazebo：
+
+- 蓝色机器人 `working_robot_1` 到 `working_robot_6` 会在 10x10 区域中随机移动。
+- 机器人每次移动消耗 1%-2% 电量。
+- 橙红色 `charging_robot` 会移动到当前最需要充电的机器人位置。
+- 终端会输出每轮电量、充电目标、移动距离和充电前后电量。
+
+停止程序：
+
+```bash
+Ctrl + C
+```
+
+## 运行控制台仿真
 
 假设你已经安装 ROS2 Humble，并把本目录复制到 Ubuntu 中。
 
 ```bash
-cd ros2_charge_ws
 source /opt/ros/humble/setup.bash
 colcon build
 source install/setup.bash
@@ -65,9 +100,13 @@ ros2 run robot_charging_scheduler charging_scheduler --ros-args \
 - `work_area_size`：二维工作区域边长。
 - `timer_period`：仿真周期，单位秒。
 - `random_seed`：随机种子，方便复现实验结果。
+- `use_gazebo`：是否同步 Gazebo 模型位置，launch 文件中默认开启。
 
 ## 主要文件
 
 - `src/robot_charging_scheduler/robot_charging_scheduler/charging_scheduler_node.py`：核心仿真与调度算法。
+- `src/robot_charging_scheduler/launch/charging_gazebo.launch.py`：Gazebo 图形仿真启动文件。
+- `src/robot_charging_scheduler/worlds/charging_world.world`：Gazebo 世界文件。
+- `src/robot_charging_scheduler/models/`：Gazebo 机器人模型。
 - `src/robot_charging_scheduler/package.xml`：ROS2 包描述。
 - `src/robot_charging_scheduler/setup.py`：Python 包入口配置。
