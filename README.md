@@ -49,6 +49,24 @@ source install/setup.bash
 ros2 launch robot_charging_scheduler charging_gazebo.launch.py
 ```
 
+如果 Gazebo 弹窗黑屏，先清理后重新构建：
+
+```bash
+rm -rf build install log
+source /opt/ros/humble/setup.bash
+colcon build
+source install/setup.bash
+ros2 launch robot_charging_scheduler charging_gazebo.launch.py
+```
+
+如果仍然黑屏，手动启用软件渲染后再运行：
+
+```bash
+export LIBGL_ALWAYS_SOFTWARE=1
+export QT_X11_NO_MITSHM=1
+ros2 launch robot_charging_scheduler charging_gazebo.launch.py
+```
+
 运行后会打开 Gazebo：
 
 - 蓝色机器人 `working_robot_1` 到 `working_robot_6` 会在 10x10 区域中随机移动。

@@ -86,6 +86,8 @@ def generate_launch_description() -> LaunchDescription:
     return LaunchDescription(
         [
             SetEnvironmentVariable("GAZEBO_MODEL_PATH", gazebo_model_path),
+            SetEnvironmentVariable("LIBGL_ALWAYS_SOFTWARE", "1"),
+            SetEnvironmentVariable("QT_X11_NO_MITSHM", "1"),
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(gazebo_launch),
                 launch_arguments={"world": world_file, "verbose": "false"}.items(),
