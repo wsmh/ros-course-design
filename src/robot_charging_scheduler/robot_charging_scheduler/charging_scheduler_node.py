@@ -44,6 +44,7 @@ class ChargingRobotState:
     y: float = 0.0
     target_id: Optional[int] = None
     charging_ticks_remaining: int = 0
+    moving_to_target: bool = False
 
 
 class ChargingSchedulerNode(Node):
@@ -144,6 +145,14 @@ class ChargingSchedulerNode(Node):
         """Run one simulation step: robots work, scheduler chooses target, then charges."""
         self.tick_count += 1
 
+        if self.charging_robot.moving_to_target:
+            self._move_working_robots()
+            self._move_charging_robot_one_step()
+            self._log_state(f"第 {self.tick_count} 轮充电机器人前往目标")
+            self._print_battery_dashboard()
+            self._sync_gazebo_models()
+            return
+
         if self.charging_robot.target_id is not None:
             self._move_working_robots(excluded_robot_id=self.charging_robot.target_id)
             self._continue_charging()
@@ -162,8 +171,8 @@ class ChargingSchedulerNode(Node):
             self._sync_gazebo_models()
             return
 
-        self._start_charging(target)
-        self._log_state(f"第 {self.tick_count} 轮开始充电")
+        self._dispatch_charging_robot(target)
+        self._log_state(f"第 {self.tick_count} 轮派出充电机器人")
         self._print_battery_dashboard()
         self._sync_gazebo_models()
 
@@ -236,22 +245,56 @@ class ChargingSchedulerNode(Node):
         average_consumption = 1.5
         return robot.battery / average_consumption
 
-    def _start_charging(self, target: RobotState) -> None:
-        """Move the charging robot next to target and start a multi-step charge."""
-        distance = self._distance(
-            self.charging_robot.x, self.charging_robot.y, target.x, target.y
+    def _dispatch_charging_robot(self, target: RobotState) -> None:
+        """Select a target and start moving the charging robot one grid cell per tick."""
+        self.charging_robot.target_id = target.robot_id
+        self.charging_robot.moving_to_target = True
+        target.last_action = "等待充电机器人"
+
+        self.get_logger().info(
+            f"[第 {self.tick_count} 轮] 充电机器人开始前往 R{target.robot_id}，"
+            f"目标当前电量 {target.battery:.1f}%"
         )
-        charge_cell = self._choose_charging_cell(target)
-        self.charging_robot.x = float(charge_cell[0])
-        self.charging_robot.y = float(charge_cell[1])
+
+    def _move_charging_robot_one_step(self) -> None:
+        """Move the charging robot one grid cell toward the selected robot."""
+        target = self._get_robot(self.charging_robot.target_id)
+        if target is None:
+            self.charging_robot.target_id = None
+            self.charging_robot.moving_to_target = False
+            return
+
+        destination = self._choose_charging_cell(target)
+        current_cell = (int(self.charging_robot.x), int(self.charging_robot.y))
+        if current_cell == destination:
+            self._start_charging_at_current_cell(target)
+            return
+
+        next_cell = self._choose_charging_step(destination)
+        if next_cell == current_cell:
+            self.get_logger().warn(
+                f"充电机器人到 R{target.robot_id} 的路径被阻挡，等待下一轮"
+            )
+            return
+
+        self.charging_robot.x = float(next_cell[0])
+        self.charging_robot.y = float(next_cell[1])
+        self.get_logger().info(
+            f"[第 {self.tick_count} 轮] 充电机器人移动一格到 "
+            f"({next_cell[0]},{next_cell[1]})，目标 R{target.robot_id}"
+        )
+        if next_cell == destination:
+            self._start_charging_at_current_cell(target)
+
+    def _start_charging_at_current_cell(self, target: RobotState) -> None:
+        """Start multi-step charging after the charging robot reaches an adjacent cell."""
+        self.charging_robot.moving_to_target = False
         self.charging_robot.target_id = target.robot_id
         self.charging_robot.charging_ticks_remaining = self.charging_duration_ticks
         target.last_action = "充电中"
-
         self.get_logger().info(
-            f"[第 {self.tick_count} 轮] 充电机器人前往 R{target.robot_id}，"
-            f"移动距离 {distance:.2f}，将在相邻格充电 {self.charging_duration_ticks} 轮，"
-            f"目标电量 {target.battery:.1f}%"
+            f"充电机器人到达 R{target.robot_id} 相邻格，开始充电 "
+            f"{self.charging_duration_ticks} 轮"
         )
         self._continue_charging()
 
@@ -282,6 +325,7 @@ class ChargingSchedulerNode(Node):
             target.last_action = "充电完成"
             self.charging_robot.target_id = None
             self.charging_robot.charging_ticks_remaining = 0
+            self.charging_robot.moving_to_target = False
 
     def _log_state(self, title: str) -> None:
         """Print a compact battery and position report for all working robots."""
@@ -317,6 +361,8 @@ class ChargingSchedulerNode(Node):
             )
         if self.charging_robot.target_id is None:
             charging_text = "当前未充电"
+        elif self.charging_robot.moving_to_target:
+            charging_text = f"正在前往 R{self.charging_robot.target_id}"
         else:
             charging_text = (
                 f"正在给 R{self.charging_robot.target_id} 充电，"
@@ -350,17 +396,25 @@ class ChargingSchedulerNode(Node):
     def _sync_battery_bar(self, robot: RobotState) -> None:
         """Show battery level with 10 Gazebo blocks beside each robot."""
         visible_segments = int(math.ceil(robot.battery / 10.0))
+        active_prefix = (
+            "battery_y" if robot.battery <= self.low_battery_threshold else "battery"
+        )
+        inactive_prefix = "battery" if active_prefix == "battery_y" else "battery_y"
+
         for segment in range(1, 11):
             if segment <= visible_segments:
                 x = robot.x - 0.315 + (segment - 1) * 0.07
-                y = robot.y - 0.58
-                z = 0.46
+                y = robot.y
+                z = 0.72
             else:
                 x = -5.0
                 y = -5.0
                 z = -2.0
             self._set_gazebo_entity_pose(
-                f"battery_r{robot.robot_id}_seg{segment}", x, y, z
+                f"{active_prefix}_r{robot.robot_id}_seg{segment}", x, y, z
+            )
+            self._set_gazebo_entity_pose(
+                f"{inactive_prefix}_r{robot.robot_id}_seg{segment}", -5.0, -5.0, -2.0
             )
 
     def _sync_charging_marker(self) -> None:
@@ -385,6 +439,12 @@ class ChargingSchedulerNode(Node):
         request.state.pose.position.y = y
         request.state.pose.position.z = z
         request.state.pose.orientation.w = 1.0
+        request.state.twist.linear.x = 0.0
+        request.state.twist.linear.y = 0.0
+        request.state.twist.linear.z = 0.0
+        request.state.twist.angular.x = 0.0
+        request.state.twist.angular.y = 0.0
+        request.state.twist.angular.z = 0.0
         request.state.reference_frame = "world"
         self.gazebo_client.call_async(request)
 
@@ -444,6 +504,42 @@ class ChargingSchedulerNode(Node):
                 self.charging_robot.x, self.charging_robot.y, cell[0], cell[1]
             ),
         )
+
+    def _choose_charging_step(self, destination: tuple[int, int]) -> tuple[int, int]:
+        """Choose one collision-free grid step toward the charging destination."""
+        current_x = int(self.charging_robot.x)
+        current_y = int(self.charging_robot.y)
+        occupied = {
+            (int(robot.x), int(robot.y))
+            for robot in self.robots
+            if robot.working
+        }
+
+        step_candidates: List[tuple[int, int]] = []
+        if destination[0] > current_x:
+            step_candidates.append((current_x + 1, current_y))
+        elif destination[0] < current_x:
+            step_candidates.append((current_x - 1, current_y))
+        if destination[1] > current_y:
+            step_candidates.append((current_x, current_y + 1))
+        elif destination[1] < current_y:
+            step_candidates.append((current_x, current_y - 1))
+
+        step_candidates.extend(
+            [
+                (current_x + dx, current_y + dy)
+                for _, dx, dy in DIRECTIONS
+                if (current_x + dx, current_y + dy) not in step_candidates
+            ]
+        )
+
+        for cell in step_candidates:
+            if not self._is_valid_cell(cell[0], cell[1]):
+                continue
+            if cell in occupied and cell != destination:
+                continue
+            return cell
+        return current_x, current_y
 
     def _get_robot(self, robot_id: Optional[int]) -> Optional[RobotState]:
         """Find a working robot by id."""
