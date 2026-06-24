@@ -25,6 +25,7 @@ setup(
         (f"share/{package_name}", ["package.xml"]),
         (f"share/{package_name}/launch", glob("launch/*.launch.py")),
         (f"share/{package_name}/worlds", glob("worlds/*.world")),
+        (f"share/{package_name}/rviz", glob("rviz/*.rviz")),
     ]
     + package_files("models"),
     install_requires=["setuptools"],

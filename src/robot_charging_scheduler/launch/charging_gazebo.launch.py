@@ -10,6 +10,7 @@ from launch.actions import (
     SetEnvironmentVariable,
     TimerAction,
 )
+from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
@@ -20,12 +21,14 @@ def generate_launch_description() -> LaunchDescription:
     package_share = get_package_share_directory("robot_charging_scheduler")
     gazebo_share = get_package_share_directory("gazebo_ros")
     world_file = os.path.join(package_share, "worlds", "charging_world.world")
+    rviz_config = os.path.join(package_share, "rviz", "charging_markers.rviz")
     gazebo_launch = os.path.join(gazebo_share, "launch", "gazebo.launch.py")
     models_path = os.path.join(package_share, "models")
     gazebo_model_path = os.pathsep.join(
         [models_path, os.environ.get("GAZEBO_MODEL_PATH", "")]
     )
     set_entity_state_service = LaunchConfiguration("set_entity_state_service")
+    start_rviz = LaunchConfiguration("start_rviz")
 
     scheduler_node = Node(
         package="robot_charging_scheduler",
@@ -46,9 +49,22 @@ def generate_launch_description() -> LaunchDescription:
             }
         ],
     )
+    rviz_node = Node(
+        package="rviz2",
+        executable="rviz2",
+        name="robot_charging_rviz",
+        arguments=["-d", rviz_config],
+        condition=IfCondition(start_rviz),
+        output="screen",
+    )
 
     return LaunchDescription(
         [
+            DeclareLaunchArgument(
+                "start_rviz",
+                default_value="true",
+                description="Start RViz2 with the MarkerArray display configured.",
+            ),
             DeclareLaunchArgument(
                 "set_entity_state_service",
                 default_value="/set_entity_state",
@@ -62,5 +78,6 @@ def generate_launch_description() -> LaunchDescription:
                 launch_arguments={"world": world_file, "verbose": "false"}.items(),
             ),
             TimerAction(period=3.0, actions=[scheduler_node]),
+            TimerAction(period=4.0, actions=[rviz_node]),
         ]
     )
