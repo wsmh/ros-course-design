@@ -39,6 +39,8 @@ def generate_launch_description() -> LaunchDescription:
                 "timer_period": 1.0,
                 "low_battery_threshold": 30.0,
                 "charge_amount_per_visit": 45.0,
+                "charging_duration_ticks": 5,
+                "show_battery_dashboard": True,
                 "set_entity_state_service": set_entity_state_service,
             }
         ],
