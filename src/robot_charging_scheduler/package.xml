@@ -9,6 +9,7 @@
   <depend>rclpy</depend>
   <depend>gazebo_msgs</depend>
   <depend>visualization_msgs</depend>
+  <exec_depend>tf2_ros</exec_depend>
   <exec_depend>gazebo_ros</exec_depend>
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>

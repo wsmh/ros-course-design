@@ -119,6 +119,14 @@ ros2 topic echo --once /robot_charging_markers
 
 如果 `topic echo` 有输出，说明节点正常发布，问题在 RViz 显示配置；如果没有输出，说明调度节点没有启动或没有 source 当前工作区。
 
+如果终端出现 `getcwd failed No such file or directory`，通常是当前终端所在目录曾被删除过。重新进入工作区后再启动：
+
+```bash
+cd ~/ros-course-design
+source install/setup.bash
+rviz2 -d install/robot_charging_scheduler/share/robot_charging_scheduler/rviz/charging_markers.rviz
+```
+
 如果 Gazebo 中看不到机器人，或者只看到一个物体，通常是旧的 world/launch 文件仍在 `install/` 中。执行下面命令清理重建：
 
 ```bash
@@ -187,7 +195,7 @@ ros2 run robot_charging_scheduler charging_scheduler --ros-args \
 - `full_battery`：满电电量，默认 100。
 - `charge_amount_per_visit`：每次服务给目标机器人补充的电量，默认 100。
 - `work_area_size`：二维工作区域边长。
-- `timer_period`：仿真周期，单位秒。
+- `timer_period`：仿真周期，单位秒，默认 2 秒一轮；数值越大，每一步越慢。
 - `random_seed`：随机种子，方便复现实验结果。
 - `use_gazebo`：是否同步 Gazebo 模型位置，launch 文件中默认开启。
 - `charging_duration_ticks`：一次充电持续多少轮，默认 5。

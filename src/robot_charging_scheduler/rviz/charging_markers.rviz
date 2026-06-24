@@ -19,7 +19,12 @@ Visualization Manager:
       Value: true
     - Class: rviz_default_plugins/MarkerArray
       Enabled: true
-      Marker Topic: /robot_charging_markers
+      Marker Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /robot_charging_markers
       Name: RobotChargingMarkers
       Namespaces:
         battery_panel_text: true

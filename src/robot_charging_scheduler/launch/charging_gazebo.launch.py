@@ -39,7 +39,7 @@ def generate_launch_description() -> LaunchDescription:
             {
                 "use_gazebo": True,
                 "robot_count": 6,
-                "timer_period": 1.0,
+                "timer_period": 2.0,
                 "low_battery_threshold": 75.0,
                 "charge_amount_per_visit": 100.0,
                 "charging_duration_ticks": 5,
@@ -55,6 +55,13 @@ def generate_launch_description() -> LaunchDescription:
         name="robot_charging_rviz",
         arguments=["-d", rviz_config],
         condition=IfCondition(start_rviz),
+        output="screen",
+    )
+    world_tf_node = Node(
+        package="tf2_ros",
+        executable="static_transform_publisher",
+        name="world_static_tf",
+        arguments=["0", "0", "0", "0", "0", "0", "map", "world"],
         output="screen",
     )
 
@@ -77,6 +84,7 @@ def generate_launch_description() -> LaunchDescription:
                 PythonLaunchDescriptionSource(gazebo_launch),
                 launch_arguments={"world": world_file, "verbose": "false"}.items(),
             ),
+            world_tf_node,
             TimerAction(period=3.0, actions=[scheduler_node]),
             TimerAction(period=4.0, actions=[rviz_node]),
         ]

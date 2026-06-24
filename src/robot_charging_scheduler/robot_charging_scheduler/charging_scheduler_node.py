@@ -65,7 +65,7 @@ class ChargingSchedulerNode(Node):
         self.declare_parameter("full_battery", 100.0)
         self.declare_parameter("charge_amount_per_visit", 100.0)
         self.declare_parameter("work_area_size", 10.0)
-        self.declare_parameter("timer_period", 1.0)
+        self.declare_parameter("timer_period", 2.0)
         self.declare_parameter("random_seed", 7)
         self.declare_parameter("use_gazebo", False)
         self.declare_parameter("set_entity_state_service", "/set_entity_state")
