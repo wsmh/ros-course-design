@@ -55,9 +55,9 @@ class ChargingSchedulerNode(Node):
         super().__init__("charging_scheduler_node")
 
         self.declare_parameter("robot_count", 6)
-        self.declare_parameter("low_battery_threshold", 30.0)
+        self.declare_parameter("low_battery_threshold", 75.0)
         self.declare_parameter("full_battery", 100.0)
-        self.declare_parameter("charge_amount_per_visit", 45.0)
+        self.declare_parameter("charge_amount_per_visit", 100.0)
         self.declare_parameter("work_area_size", 10.0)
         self.declare_parameter("timer_period", 1.0)
         self.declare_parameter("random_seed", 7)
@@ -98,7 +98,6 @@ class ChargingSchedulerNode(Node):
         self.tick_count = 0
         self.charging_robot = ChargingRobotState()
         self.robots = self._create_working_robots()
-        self.legacy_battery_models_hidden = False
         self.gazebo_client = None
         if self.use_gazebo:
             if SetEntityState is None:
@@ -117,7 +116,7 @@ class ChargingSchedulerNode(Node):
         self.create_timer(self.timer_period, self._on_timer)
 
     def _create_working_robots(self) -> List[RobotState]:
-        """Create working robots on readable grid cells with different battery levels."""
+        """Create working robots on readable grid cells with safe initial battery."""
         initial_positions = [
             (2, 2),
             (5, 2),
@@ -137,7 +136,7 @@ class ChargingSchedulerNode(Node):
                     robot_id=robot_id,
                     x=float(x),
                     y=float(y),
-                    battery=random.uniform(35.0, 95.0),
+                    battery=random.uniform(75.0, 100.0),
                 )
             )
         return robots
@@ -147,7 +146,8 @@ class ChargingSchedulerNode(Node):
         self.tick_count += 1
 
         if self.charging_robot.moving_to_target:
-            self._move_working_robots()
+            self._move_working_robots(excluded_robot_id=self.charging_robot.target_id)
+            self._retarget_if_more_urgent()
             self._move_charging_robot_one_step()
             self._log_state(f"第 {self.tick_count} 轮充电机器人前往目标")
             self._print_battery_dashboard()
@@ -179,11 +179,7 @@ class ChargingSchedulerNode(Node):
 
     def _move_working_robots(self, excluded_robot_id: Optional[int] = None) -> None:
         """Move each working robot one grid cell in a random free direction."""
-        occupied_cells = {
-            (int(robot.x), int(robot.y))
-            for robot in self.robots
-            if robot.working
-        }
+        occupied_cells = {(int(robot.x), int(robot.y)) for robot in self.robots}
         occupied_cells.add((int(self.charging_robot.x), int(self.charging_robot.y)))
 
         for robot in self.robots:
@@ -213,7 +209,7 @@ class ChargingSchedulerNode(Node):
 
     def _choose_next_target(self) -> Optional[RobotState]:
         """Choose the next charging target using urgency and travel distance."""
-        candidates = [robot for robot in self.robots if robot.working]
+        candidates = list(self.robots)
         if not candidates:
             return None
 
@@ -221,7 +217,7 @@ class ChargingSchedulerNode(Node):
             robot
             for robot in candidates
             if robot.battery <= self.low_battery_threshold
-            or self._estimate_remaining_moves(robot) <= 15.0
+            or self._estimate_remaining_moves(robot) <= 45.0
         ]
         if not urgent_candidates:
             return None
@@ -236,10 +232,11 @@ class ChargingSchedulerNode(Node):
         )
         remaining_moves = self._estimate_remaining_moves(robot)
 
+        dead_robot_bonus = -100.0 if robot.battery <= 0.0 else 0.0
         battery_weight = robot.battery
         time_risk_weight = remaining_moves * 2.0
         distance_weight = distance * 1.5
-        return battery_weight + time_risk_weight + distance_weight
+        return dead_robot_bonus + battery_weight + time_risk_weight + distance_weight
 
     def _estimate_remaining_moves(self, robot: RobotState) -> float:
         """Estimate how many random moves a robot can still make."""
@@ -256,6 +253,28 @@ class ChargingSchedulerNode(Node):
             f"[第 {self.tick_count} 轮] 充电机器人开始前往 R{target.robot_id}，"
             f"目标当前电量 {target.battery:.1f}%"
         )
+
+    def _retarget_if_more_urgent(self) -> None:
+        """Switch target during travel if another robot becomes clearly more urgent."""
+        current_target = self._get_robot(self.charging_robot.target_id)
+        new_target = self._choose_next_target()
+        if current_target is None or new_target is None:
+            return
+        if new_target.robot_id == current_target.robot_id:
+            return
+
+        current_score = self._priority_score(current_target)
+        new_score = self._priority_score(new_target)
+        has_dead_robot = new_target.battery <= 0.0 and current_target.battery > 0.0
+        clearly_more_urgent = new_score + 10.0 < current_score
+        if has_dead_robot or clearly_more_urgent:
+            self.get_logger().warn(
+                f"发现更紧急目标：从 R{current_target.robot_id} 改为前往 "
+                f"R{new_target.robot_id}"
+            )
+            current_target.last_action = "继续工作"
+            self.charging_robot.target_id = new_target.robot_id
+            new_target.last_action = "等待充电机器人"
 
     def _move_charging_robot_one_step(self) -> None:
         """Move the charging robot one grid cell toward the selected robot."""
@@ -391,28 +410,34 @@ class ChargingSchedulerNode(Node):
             self._set_gazebo_entity_pose(
                 f"working_robot_{robot.robot_id}", robot.x, robot.y, 0.02
             )
+            self._set_gazebo_entity_pose(
+                f"robot_label_r{robot.robot_id}", robot.x, robot.y, 0.55
+            )
             self._sync_battery_bar(robot)
         self._sync_charging_marker()
 
     def _sync_battery_bar(self, robot: RobotState) -> None:
-        """Show battery level with one stable indicator per robot."""
-        self._hide_legacy_battery_segments()
-        battery_ratio = self._clamp(robot.battery / self.full_battery, 0.0, 1.0)
-        x = robot.x - 0.30 + battery_ratio * 0.60
-        y = robot.y
-        z = 0.72
+        """Show battery level on fixed dashboard blocks from left to right."""
+        visible_segments = int(math.ceil(self._clamp(robot.battery, 0.0, 100.0) / 10.0))
+        y = 9.0 - (robot.robot_id - 1) * 0.55
+        z = 0.18
+        active_prefix = (
+            "battery_y" if robot.battery <= self.low_battery_threshold else "battery_g"
+        )
+        inactive_prefix = "battery_g" if active_prefix == "battery_y" else "battery_y"
 
-        if robot.battery <= self.low_battery_threshold:
+        for segment in range(1, 11):
+            if segment <= visible_segments:
+                x = 10.35 + (segment - 1) * 0.14
+                self._set_gazebo_entity_pose(
+                    f"{active_prefix}_r{robot.robot_id}_seg{segment}", x, y, z
+                )
+            else:
+                self._set_gazebo_entity_pose(
+                    f"{active_prefix}_r{robot.robot_id}_seg{segment}", -5.0, -5.0, -2.0
+                )
             self._set_gazebo_entity_pose(
-                f"battery_cursor_r{robot.robot_id}", -5.0, -5.0, -2.0
-            )
-            self._set_gazebo_entity_pose(
-                f"battery_y_r{robot.robot_id}_seg1", x, y, z
-            )
-        else:
-            self._set_gazebo_entity_pose(f"battery_cursor_r{robot.robot_id}", x, y, z)
-            self._set_gazebo_entity_pose(
-                f"battery_y_r{robot.robot_id}_seg1", -5.0, -5.0, -2.0
+                f"{inactive_prefix}_r{robot.robot_id}_seg{segment}", -5.0, -5.0, -2.0
             )
 
     def _sync_charging_marker(self) -> None:
@@ -422,21 +447,6 @@ class ChargingSchedulerNode(Node):
             self._set_gazebo_entity_pose("charging_marker", -5.0, -5.0, -2.0)
             return
         self._set_gazebo_entity_pose("charging_marker", target.x, target.y, 0.75)
-
-    def _hide_legacy_battery_segments(self) -> None:
-        """Hide old per-segment battery models once to avoid scattered blocks."""
-        if self.legacy_battery_models_hidden:
-            return
-        for robot_id in range(1, self.robot_count + 1):
-            for segment in range(1, 11):
-                self._set_gazebo_entity_pose(
-                    f"battery_r{robot_id}_seg{segment}", -5.0, -5.0, -2.0
-                )
-                if segment != 1:
-                    self._set_gazebo_entity_pose(
-                        f"battery_y_r{robot_id}_seg{segment}", -5.0, -5.0, -2.0
-                    )
-        self.legacy_battery_models_hidden = True
 
     def _set_gazebo_entity_pose(
         self, entity_name: str, x: float, y: float, z: float
@@ -501,7 +511,7 @@ class ChargingSchedulerNode(Node):
         occupied = {
             (int(robot.x), int(robot.y))
             for robot in self.robots
-            if robot.robot_id != target.robot_id and robot.working
+            if robot.robot_id != target.robot_id
         }
         candidates: List[tuple[int, int]] = []
         for _, dx, dy in DIRECTIONS:
@@ -522,11 +532,7 @@ class ChargingSchedulerNode(Node):
         """Choose one collision-free grid step toward the charging destination."""
         current_x = int(self.charging_robot.x)
         current_y = int(self.charging_robot.y)
-        occupied = {
-            (int(robot.x), int(robot.y))
-            for robot in self.robots
-            if robot.working
-        }
+        occupied = {(int(robot.x), int(robot.y)) for robot in self.robots}
 
         step_candidates: List[tuple[int, int]] = []
         if destination[0] > current_x:
