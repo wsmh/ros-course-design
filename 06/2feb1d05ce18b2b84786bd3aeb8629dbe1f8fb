@@ -1,0 +1,615 @@
+src/robot_charging_scheduler/worlds/charging_world.world
+  s_2df5b2cc9d6e8a::t_e779896d1cdc8e 1-72 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a3bddb2be494dd560d7c56f","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Range":[1,72]}]}]}
+src/robot_charging_scheduler/launch/charging_gazebo.launch.py
+  s_2df5b2cc9d6e8a::t_33aa6169ddc522 1-62,66-87,89-96 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a3bdddebe494dd560d7c607","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Range":[1,62]},{"Range":[66,87]},{"Range":[89,96]}]}]}
+  s_2df5b2cc9d6e8a::t_31d3a7d1bcd8ba 63-65,88 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a3bde50be494dd560d7c6ce","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Range":[63,65]},{"Single":88}]}]}
+src/robot_charging_scheduler/package.xml
+  s_2df5b2cc9d6e8a::t_ea4fe3779a18e1 10-13 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a3bde02be494dd560d7c664","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Range":[10,13]}]}]}
+src/robot_charging_scheduler/models/charging_robot/model.config
+  s_2df5b2cc9d6e8a::t_d81cdf997afe68 1-11 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a3bddcebe494dd560d7c5ca","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Range":[1,11]}]}]}
+README.md
+  s_2df5b2cc9d6e8a::t_c27e126528d9c5 3,12,30-65,103,108-110 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a3bde0abe494dd560d7c67e","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Single":3},{"Single":12},{"Range":[30,65]},{"Single":103},{"Range":[108,110]}]}]}
+src/robot_charging_scheduler/setup.py
+  s_2df5b2cc9d6e8a::t_e86eea9c5a5d28 8 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a3bde24be494dd560d7c69c","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Single":8}]}]}
+  s_2df5b2cc9d6e8a::t_86e5b4c7b6a644 1-3,9-18,26-29 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a3bddfabe494dd560d7c64a","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Range":[1,3]},{"Range":[9,18]},{"Range":[26,29]}]}]}
+src/robot_charging_scheduler/models/working_robot/model.config
+  s_2df5b2cc9d6e8a::t_972bbce94e5b83 1-11 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a3bddbdbe494dd560d7c58d","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Range":[1,11]}]}]}
+src/robot_charging_scheduler/models/charging_robot/model.sdf
+  s_2df5b2cc9d6e8a::t_faa9fcd66c5c7d 1-33 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a3bddd4be494dd560d7c5e8","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Range":[1,33]}]}]}
+src/robot_charging_scheduler/robot_charging_scheduler/charging_scheduler_node.py
+  s_2df5b2cc9d6e8a::t_e63fdaaac10cfb 9-10,49,61,72-76,80,106,112,204-236 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a3bddebbe494dd560d7c628","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Range":[9,10]},{"Single":49},{"Single":61},{"Range":[72,76]},{"Single":80},{"Single":106},{"Single":112},{"Range":[204,236]}]}]}
+src/robot_charging_scheduler/models/working_robot/model.sdf
+  s_2df5b2cc9d6e8a::t_af6699999e3c24 1-33 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a3bddc5be494dd560d7c5ab","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Range":[1,33]}]}]}
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "062feb1d05ce18b2b84786bd3aeb8629dbe1f8fb",
+  "prompts": {},
+  "humans": {
+    "h_791288119636c8": {
+      "author": "shanmohan <shanmohan@bytedance.com>"
+    }
+  },
+  "sessions": {
+    "s_2df5b2cc9d6e8a": {
+      "agent_id": {
+        "tool": "trae",
+        "id": "6a3bd180be494dd560d7c3ac",
+        "model": "gpt-5.5__dev"
+      },
+      "human_author": "shanmohan <shanmohan@bytedance.com>"
+    }
+  },
+  "attestation_metadata": {
+    "README.md": [
+      {
+        "hash": "s_2df5b2cc9d6e8a::t_c27e126528d9c5",
+        "line_ranges": [
+          {
+            "Single": 3
+          },
+          {
+            "Single": 12
+          },
+          {
+            "Range": [
+              30,
+              65
+            ]
+          },
+          {
+            "Single": 103
+          },
+          {
+            "Range": [
+              108,
+              110
+            ]
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a3bde0abe494dd560d7c67e",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Single": 3
+              },
+              {
+                "Single": 12
+              },
+              {
+                "Range": [
+                  30,
+                  65
+                ]
+              },
+              {
+                "Single": 103
+              },
+              {
+                "Range": [
+                  108,
+                  110
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "src/robot_charging_scheduler/launch/charging_gazebo.launch.py": [
+      {
+        "hash": "s_2df5b2cc9d6e8a::t_33aa6169ddc522",
+        "line_ranges": [
+          {
+            "Range": [
+              1,
+              62
+            ]
+          },
+          {
+            "Range": [
+              66,
+              87
+            ]
+          },
+          {
+            "Range": [
+              89,
+              96
+            ]
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a3bdddebe494dd560d7c607",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Range": [
+                  1,
+                  62
+                ]
+              },
+              {
+                "Range": [
+                  66,
+                  87
+                ]
+              },
+              {
+                "Range": [
+                  89,
+                  96
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "hash": "s_2df5b2cc9d6e8a::t_31d3a7d1bcd8ba",
+        "line_ranges": [
+          {
+            "Range": [
+              63,
+              65
+            ]
+          },
+          {
+            "Single": 88
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a3bde50be494dd560d7c6ce",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Range": [
+                  63,
+                  65
+                ]
+              },
+              {
+                "Single": 88
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "src/robot_charging_scheduler/models/charging_robot/model.config": [
+      {
+        "hash": "s_2df5b2cc9d6e8a::t_d81cdf997afe68",
+        "line_ranges": [
+          {
+            "Range": [
+              1,
+              11
+            ]
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a3bddcebe494dd560d7c5ca",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Range": [
+                  1,
+                  11
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "src/robot_charging_scheduler/models/charging_robot/model.sdf": [
+      {
+        "hash": "s_2df5b2cc9d6e8a::t_faa9fcd66c5c7d",
+        "line_ranges": [
+          {
+            "Range": [
+              1,
+              33
+            ]
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a3bddd4be494dd560d7c5e8",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Range": [
+                  1,
+                  33
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "src/robot_charging_scheduler/models/working_robot/model.config": [
+      {
+        "hash": "s_2df5b2cc9d6e8a::t_972bbce94e5b83",
+        "line_ranges": [
+          {
+            "Range": [
+              1,
+              11
+            ]
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a3bddbdbe494dd560d7c58d",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Range": [
+                  1,
+                  11
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "src/robot_charging_scheduler/models/working_robot/model.sdf": [
+      {
+        "hash": "s_2df5b2cc9d6e8a::t_af6699999e3c24",
+        "line_ranges": [
+          {
+            "Range": [
+              1,
+              33
+            ]
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a3bddc5be494dd560d7c5ab",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Range": [
+                  1,
+                  33
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "src/robot_charging_scheduler/package.xml": [
+      {
+        "hash": "s_2df5b2cc9d6e8a::t_ea4fe3779a18e1",
+        "line_ranges": [
+          {
+            "Range": [
+              10,
+              13
+            ]
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a3bde02be494dd560d7c664",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Range": [
+                  10,
+                  13
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "src/robot_charging_scheduler/robot_charging_scheduler/charging_scheduler_node.py": [
+      {
+        "hash": "s_2df5b2cc9d6e8a::t_e63fdaaac10cfb",
+        "line_ranges": [
+          {
+            "Range": [
+              9,
+              10
+            ]
+          },
+          {
+            "Single": 49
+          },
+          {
+            "Single": 61
+          },
+          {
+            "Range": [
+              72,
+              76
+            ]
+          },
+          {
+            "Single": 80
+          },
+          {
+            "Single": 106
+          },
+          {
+            "Single": 112
+          },
+          {
+            "Range": [
+              204,
+              236
+            ]
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a3bddebbe494dd560d7c628",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Range": [
+                  9,
+                  10
+                ]
+              },
+              {
+                "Single": 49
+              },
+              {
+                "Single": 61
+              },
+              {
+                "Range": [
+                  72,
+                  76
+                ]
+              },
+              {
+                "Single": 80
+              },
+              {
+                "Single": 106
+              },
+              {
+                "Single": 112
+              },
+              {
+                "Range": [
+                  204,
+                  236
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "src/robot_charging_scheduler/setup.py": [
+      {
+        "hash": "s_2df5b2cc9d6e8a::t_e86eea9c5a5d28",
+        "line_ranges": [
+          {
+            "Single": 8
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a3bde24be494dd560d7c69c",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Single": 8
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "hash": "s_2df5b2cc9d6e8a::t_86e5b4c7b6a644",
+        "line_ranges": [
+          {
+            "Range": [
+              1,
+              3
+            ]
+          },
+          {
+            "Range": [
+              9,
+              18
+            ]
+          },
+          {
+            "Range": [
+              26,
+              29
+            ]
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a3bddfabe494dd560d7c64a",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Range": [
+                  1,
+                  3
+                ]
+              },
+              {
+                "Range": [
+                  9,
+                  18
+                ]
+              },
+              {
+                "Range": [
+                  26,
+                  29
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "src/robot_charging_scheduler/worlds/charging_world.world": [
+      {
+        "hash": "s_2df5b2cc9d6e8a::t_e779896d1cdc8e",
+        "line_ranges": [
+          {
+            "Range": [
+              1,
+              72
+            ]
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a3bddb2be494dd560d7c56f",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Range": [
+                  1,
+                  72
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "remote_transcripts": {
+    "s_2df5b2cc9d6e8a": {
+      "tool": "trae",
+      "conversation_id": "6a3bd180be494dd560d7c3ac",
+      "session_id": "6a3bd180be494dd560d7c3ac",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    },
+    "s_2df5b2cc9d6e8a::t_31d3a7d1bcd8ba": {
+      "tool": "trae",
+      "conversation_id": "6a3bd180be494dd560d7c3ac",
+      "session_id": "6a3bd180be494dd560d7c3ac",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    },
+    "s_2df5b2cc9d6e8a::t_33aa6169ddc522": {
+      "tool": "trae",
+      "conversation_id": "6a3bd180be494dd560d7c3ac",
+      "session_id": "6a3bd180be494dd560d7c3ac",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    },
+    "s_2df5b2cc9d6e8a::t_86e5b4c7b6a644": {
+      "tool": "trae",
+      "conversation_id": "6a3bd180be494dd560d7c3ac",
+      "session_id": "6a3bd180be494dd560d7c3ac",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    },
+    "s_2df5b2cc9d6e8a::t_972bbce94e5b83": {
+      "tool": "trae",
+      "conversation_id": "6a3bd180be494dd560d7c3ac",
+      "session_id": "6a3bd180be494dd560d7c3ac",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    },
+    "s_2df5b2cc9d6e8a::t_af6699999e3c24": {
+      "tool": "trae",
+      "conversation_id": "6a3bd180be494dd560d7c3ac",
+      "session_id": "6a3bd180be494dd560d7c3ac",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    },
+    "s_2df5b2cc9d6e8a::t_c27e126528d9c5": {
+      "tool": "trae",
+      "conversation_id": "6a3bd180be494dd560d7c3ac",
+      "session_id": "6a3bd180be494dd560d7c3ac",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    },
+    "s_2df5b2cc9d6e8a::t_d81cdf997afe68": {
+      "tool": "trae",
+      "conversation_id": "6a3bd180be494dd560d7c3ac",
+      "session_id": "6a3bd180be494dd560d7c3ac",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    },
+    "s_2df5b2cc9d6e8a::t_e63fdaaac10cfb": {
+      "tool": "trae",
+      "conversation_id": "6a3bd180be494dd560d7c3ac",
+      "session_id": "6a3bd180be494dd560d7c3ac",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    },
+    "s_2df5b2cc9d6e8a::t_e779896d1cdc8e": {
+      "tool": "trae",
+      "conversation_id": "6a3bd180be494dd560d7c3ac",
+      "session_id": "6a3bd180be494dd560d7c3ac",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    },
+    "s_2df5b2cc9d6e8a::t_e86eea9c5a5d28": {
+      "tool": "trae",
+      "conversation_id": "6a3bd180be494dd560d7c3ac",
+      "session_id": "6a3bd180be494dd560d7c3ac",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    },
+    "s_2df5b2cc9d6e8a::t_ea4fe3779a18e1": {
+      "tool": "trae",
+      "conversation_id": "6a3bd180be494dd560d7c3ac",
+      "session_id": "6a3bd180be494dd560d7c3ac",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    },
+    "s_2df5b2cc9d6e8a::t_faa9fcd66c5c7d": {
+      "tool": "trae",
+      "conversation_id": "6a3bd180be494dd560d7c3ac",
+      "session_id": "6a3bd180be494dd560d7c3ac",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    }
+  }
+}
