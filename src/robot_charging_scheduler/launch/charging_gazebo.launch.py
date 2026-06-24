@@ -4,12 +4,20 @@ import os
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription, SetEnvironmentVariable, TimerAction
+from launch.actions import (
+    DeclareLaunchArgument,
+    IncludeLaunchDescription,
+    SetEnvironmentVariable,
+    TimerAction,
+)
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
 
-def _spawn_working_robot(package_share: str, robot_id: int) -> Node:
+def _spawn_working_robot(
+    package_share: str, robot_id: int, x: float, y: float
+) -> Node:
     """Create a Gazebo spawn node for one working robot."""
     model_file = os.path.join(package_share, "models", "working_robot", "model.sdf")
     return Node(
@@ -21,9 +29,9 @@ def _spawn_working_robot(package_share: str, robot_id: int) -> Node:
             "-file",
             model_file,
             "-x",
-            "0.0",
+            f"{x:.2f}",
             "-y",
-            "0.0",
+            f"{y:.2f}",
             "-z",
             "0.0",
         ],
@@ -43,9 +51,9 @@ def _spawn_charging_robot(package_share: str) -> Node:
             "-file",
             model_file,
             "-x",
-            "0.0",
+            "0.80",
             "-y",
-            "0.0",
+            "0.80",
             "-z",
             "0.0",
         ],
@@ -63,9 +71,24 @@ def generate_launch_description() -> LaunchDescription:
     gazebo_model_path = os.pathsep.join(
         [models_path, os.environ.get("GAZEBO_MODEL_PATH", "")]
     )
+    set_entity_state_service = LaunchConfiguration("set_entity_state_service")
 
-    spawn_nodes = [_spawn_charging_robot(package_share)]
-    spawn_nodes.extend([_spawn_working_robot(package_share, i) for i in range(1, 7)])
+    initial_positions = [
+        (2.0, 2.0),
+        (5.0, 2.0),
+        (8.0, 2.0),
+        (2.0, 7.0),
+        (5.0, 7.0),
+        (8.0, 7.0),
+    ]
+    spawn_actions = [TimerAction(period=3.0, actions=[_spawn_charging_robot(package_share)])]
+    for index, (x, y) in enumerate(initial_positions, start=1):
+        spawn_actions.append(
+            TimerAction(
+                period=3.0 + index * 0.4,
+                actions=[_spawn_working_robot(package_share, index, x, y)],
+            )
+        )
 
     scheduler_node = Node(
         package="robot_charging_scheduler",
@@ -79,12 +102,18 @@ def generate_launch_description() -> LaunchDescription:
                 "timer_period": 1.0,
                 "low_battery_threshold": 30.0,
                 "charge_amount_per_visit": 45.0,
+                "set_entity_state_service": set_entity_state_service,
             }
         ],
     )
 
     return LaunchDescription(
         [
+            DeclareLaunchArgument(
+                "set_entity_state_service",
+                default_value="/set_entity_state",
+                description="Gazebo SetEntityState service name.",
+            ),
             SetEnvironmentVariable("GAZEBO_MODEL_PATH", gazebo_model_path),
             SetEnvironmentVariable("LIBGL_ALWAYS_SOFTWARE", "1"),
             SetEnvironmentVariable("QT_X11_NO_MITSHM", "1"),
@@ -92,7 +121,7 @@ def generate_launch_description() -> LaunchDescription:
                 PythonLaunchDescriptionSource(gazebo_launch),
                 launch_arguments={"world": world_file, "verbose": "false"}.items(),
             ),
-            TimerAction(period=3.0, actions=spawn_nodes),
-            TimerAction(period=6.0, actions=[scheduler_node]),
+            *spawn_actions,
+            TimerAction(period=8.0, actions=[scheduler_node]),
         ]
     )

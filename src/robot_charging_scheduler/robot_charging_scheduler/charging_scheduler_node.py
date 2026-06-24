@@ -6,10 +6,15 @@ import random
 from dataclasses import dataclass
 from typing import List, Optional
 
-from gazebo_msgs.msg import EntityState
-from gazebo_msgs.srv import SetEntityState
 import rclpy
 from rclpy.node import Node
+
+try:
+    from gazebo_msgs.msg import EntityState
+    from gazebo_msgs.srv import SetEntityState
+except ModuleNotFoundError:
+    EntityState = None
+    SetEntityState = None
 
 
 @dataclass
@@ -47,6 +52,7 @@ class ChargingSchedulerNode(Node):
         self.declare_parameter("timer_period", 1.0)
         self.declare_parameter("random_seed", 7)
         self.declare_parameter("use_gazebo", False)
+        self.declare_parameter("set_entity_state_service", "/set_entity_state")
 
         self.robot_count = int(self.get_parameter("robot_count").value)
         self.low_battery_threshold = float(
@@ -59,6 +65,9 @@ class ChargingSchedulerNode(Node):
         self.work_area_size = float(self.get_parameter("work_area_size").value)
         self.timer_period = float(self.get_parameter("timer_period").value)
         self.use_gazebo = bool(self.get_parameter("use_gazebo").value)
+        self.set_entity_state_service = str(
+            self.get_parameter("set_entity_state_service").value
+        )
 
         if self.robot_count <= 5:
             raise ValueError("robot_count must be greater than 5 for this assignment")
@@ -71,8 +80,13 @@ class ChargingSchedulerNode(Node):
         self.robots = self._create_working_robots()
         self.gazebo_client = None
         if self.use_gazebo:
+            if SetEntityState is None:
+                raise RuntimeError(
+                    "use_gazebo=True requires gazebo_msgs. "
+                    "Install it with: sudo apt install ros-$ROS_DISTRO-gazebo-ros-pkgs"
+                )
             self.gazebo_client = self.create_client(
-                SetEntityState, "/gazebo/set_entity_state"
+                SetEntityState, self.set_entity_state_service
             )
 
         self.get_logger().info("机器人充电调度仿真启动")
@@ -207,7 +221,9 @@ class ChargingSchedulerNode(Node):
             return
 
         if not self.gazebo_client.service_is_ready():
-            self.get_logger().warn("等待 Gazebo /gazebo/set_entity_state 服务就绪")
+            self.get_logger().warn(
+                f"等待 Gazebo {self.set_entity_state_service} 服务就绪"
+            )
             return
 
         self._set_gazebo_entity_pose(
@@ -222,7 +238,7 @@ class ChargingSchedulerNode(Node):
         self, entity_name: str, x: float, y: float, z: float
     ) -> None:
         """Send one model pose update request to Gazebo."""
-        if self.gazebo_client is None:
+        if self.gazebo_client is None or SetEntityState is None or EntityState is None:
             return
 
         request = SetEntityState.Request()

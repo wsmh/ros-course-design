@@ -74,6 +74,30 @@ ros2 launch robot_charging_scheduler charging_gazebo.launch.py
 - 橙红色 `charging_robot` 会移动到当前最需要充电的机器人位置。
 - 终端会输出每轮电量、充电目标、移动距离和充电前后电量。
 
+如果 Gazebo 中只看到一个橙色物体，通常是旧 launch 文件仍在 `install/` 中，或者多个机器人一开始重叠在原点。执行下面命令清理重建：
+
+```bash
+rm -rf build install log
+source /opt/ros/humble/setup.bash
+colcon build
+source install/setup.bash
+ros2 launch robot_charging_scheduler charging_gazebo.launch.py
+```
+
+如果终端一直输出 `等待 Gazebo /set_entity_state 服务就绪`，打开另一个终端检查 Gazebo 状态服务：
+
+```bash
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+ros2 service list | grep entity_state
+```
+
+正常应能看到 `/set_entity_state`。如果你的环境显示的是 `/gazebo/set_entity_state`，可以这样启动：
+
+```bash
+ros2 launch robot_charging_scheduler charging_gazebo.launch.py set_entity_state_service:=/gazebo/set_entity_state
+```
+
 停止程序：
 
 ```bash
