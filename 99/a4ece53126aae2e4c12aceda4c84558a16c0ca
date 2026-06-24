@@ -1,0 +1,493 @@
+src/robot_charging_scheduler/worlds/charging_world.world
+  s_2df5b2cc9d6e8a::t_2a40b90876e0c8 4-10 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a3be9b4be494dd560d7c809","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Range":[4,10]}]}]}
+src/robot_charging_scheduler/models/working_robot/model.sdf
+  s_2df5b2cc9d6e8a::t_1075cab0e73516 4,6 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a3be9bfbe494dd560d7c827","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Single":4},{"Single":6}]}]}
+src/robot_charging_scheduler/launch/charging_gazebo.launch.py
+  s_2df5b2cc9d6e8a::t_ff4d18503a8d70 7-12,14,74,105,112-116 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a3be9e9be494dd560d7c8bd","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Range":[7,12]},{"Single":14},{"Single":74},{"Single":105},{"Range":[112,116]}]}]}
+  s_2df5b2cc9d6e8a::t_37204f44c7060d 18-20,32,34,54,56,76-91,124-125 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a3be943be494dd560d7c798","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Range":[18,20]},{"Single":32},{"Single":34},{"Single":54},{"Single":56},{"Range":[76,91]},{"Range":[124,125]}]}]}
+src/robot_charging_scheduler/models/charging_robot/model.sdf
+  s_2df5b2cc9d6e8a::t_0e406c511d09d5 4,6 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a3be9c6be494dd560d7c846","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Single":4},{"Single":6}]}]}
+README.md
+  s_2df5b2cc9d6e8a::t_1fc28e1848d69b 87-100 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a3be9debe494dd560d7c8a8","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Range":[87,100]}]}]}
+  s_2df5b2cc9d6e8a::t_d80627b55384b2 77-86 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a3be95ebe494dd560d7c7db","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Range":[77,86]}]}]}
+src/robot_charging_scheduler/robot_charging_scheduler/charging_scheduler_node.py
+  s_2df5b2cc9d6e8a::t_271bb9777feda0 55,68-70,89,224-226 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a3be9cebe494dd560d7c865","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Single":55},{"Range":[68,70]},{"Single":89},{"Range":[224,226]}]}]}
+  s_2df5b2cc9d6e8a::t_7d7440db9c12e3 12-17,83-87,241 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a3be954be494dd560d7c7b9","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Range":[12,17]},{"Range":[83,87]},{"Single":241}]}]}
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "99a4ece53126aae2e4c12aceda4c84558a16c0ca",
+  "prompts": {},
+  "humans": {
+    "h_791288119636c8": {
+      "author": "shanmohan <shanmohan@bytedance.com>"
+    }
+  },
+  "sessions": {
+    "s_2df5b2cc9d6e8a": {
+      "agent_id": {
+        "tool": "trae",
+        "id": "6a3bd180be494dd560d7c3ac",
+        "model": "gpt-5.5__dev"
+      },
+      "human_author": "shanmohan <shanmohan@bytedance.com>"
+    }
+  },
+  "attestation_metadata": {
+    "README.md": [
+      {
+        "hash": "s_2df5b2cc9d6e8a::t_1fc28e1848d69b",
+        "line_ranges": [
+          {
+            "Range": [
+              87,
+              100
+            ]
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a3be9debe494dd560d7c8a8",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Range": [
+                  87,
+                  100
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "hash": "s_2df5b2cc9d6e8a::t_d80627b55384b2",
+        "line_ranges": [
+          {
+            "Range": [
+              77,
+              86
+            ]
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a3be95ebe494dd560d7c7db",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Range": [
+                  77,
+                  86
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "src/robot_charging_scheduler/launch/charging_gazebo.launch.py": [
+      {
+        "hash": "s_2df5b2cc9d6e8a::t_ff4d18503a8d70",
+        "line_ranges": [
+          {
+            "Range": [
+              7,
+              12
+            ]
+          },
+          {
+            "Single": 14
+          },
+          {
+            "Single": 74
+          },
+          {
+            "Single": 105
+          },
+          {
+            "Range": [
+              112,
+              116
+            ]
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a3be9e9be494dd560d7c8bd",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Range": [
+                  7,
+                  12
+                ]
+              },
+              {
+                "Single": 14
+              },
+              {
+                "Single": 74
+              },
+              {
+                "Single": 105
+              },
+              {
+                "Range": [
+                  112,
+                  116
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "hash": "s_2df5b2cc9d6e8a::t_37204f44c7060d",
+        "line_ranges": [
+          {
+            "Range": [
+              18,
+              20
+            ]
+          },
+          {
+            "Single": 32
+          },
+          {
+            "Single": 34
+          },
+          {
+            "Single": 54
+          },
+          {
+            "Single": 56
+          },
+          {
+            "Range": [
+              76,
+              91
+            ]
+          },
+          {
+            "Range": [
+              124,
+              125
+            ]
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a3be943be494dd560d7c798",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Range": [
+                  18,
+                  20
+                ]
+              },
+              {
+                "Single": 32
+              },
+              {
+                "Single": 34
+              },
+              {
+                "Single": 54
+              },
+              {
+                "Single": 56
+              },
+              {
+                "Range": [
+                  76,
+                  91
+                ]
+              },
+              {
+                "Range": [
+                  124,
+                  125
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "src/robot_charging_scheduler/models/charging_robot/model.sdf": [
+      {
+        "hash": "s_2df5b2cc9d6e8a::t_0e406c511d09d5",
+        "line_ranges": [
+          {
+            "Single": 4
+          },
+          {
+            "Single": 6
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a3be9c6be494dd560d7c846",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Single": 4
+              },
+              {
+                "Single": 6
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "src/robot_charging_scheduler/models/working_robot/model.sdf": [
+      {
+        "hash": "s_2df5b2cc9d6e8a::t_1075cab0e73516",
+        "line_ranges": [
+          {
+            "Single": 4
+          },
+          {
+            "Single": 6
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a3be9bfbe494dd560d7c827",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Single": 4
+              },
+              {
+                "Single": 6
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "src/robot_charging_scheduler/robot_charging_scheduler/charging_scheduler_node.py": [
+      {
+        "hash": "s_2df5b2cc9d6e8a::t_271bb9777feda0",
+        "line_ranges": [
+          {
+            "Single": 55
+          },
+          {
+            "Range": [
+              68,
+              70
+            ]
+          },
+          {
+            "Single": 89
+          },
+          {
+            "Range": [
+              224,
+              226
+            ]
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a3be9cebe494dd560d7c865",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Single": 55
+              },
+              {
+                "Range": [
+                  68,
+                  70
+                ]
+              },
+              {
+                "Single": 89
+              },
+              {
+                "Range": [
+                  224,
+                  226
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "hash": "s_2df5b2cc9d6e8a::t_7d7440db9c12e3",
+        "line_ranges": [
+          {
+            "Range": [
+              12,
+              17
+            ]
+          },
+          {
+            "Range": [
+              83,
+              87
+            ]
+          },
+          {
+            "Single": 241
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a3be954be494dd560d7c7b9",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Range": [
+                  12,
+                  17
+                ]
+              },
+              {
+                "Range": [
+                  83,
+                  87
+                ]
+              },
+              {
+                "Single": 241
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "src/robot_charging_scheduler/worlds/charging_world.world": [
+      {
+        "hash": "s_2df5b2cc9d6e8a::t_2a40b90876e0c8",
+        "line_ranges": [
+          {
+            "Range": [
+              4,
+              10
+            ]
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a3be9b4be494dd560d7c809",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Range": [
+                  4,
+                  10
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "remote_transcripts": {
+    "s_2df5b2cc9d6e8a": {
+      "tool": "trae",
+      "conversation_id": "6a3bd180be494dd560d7c3ac",
+      "session_id": "6a3bd180be494dd560d7c3ac",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    },
+    "s_2df5b2cc9d6e8a::t_0b32ce769877e2": {
+      "tool": "trae",
+      "conversation_id": "6a3bd180be494dd560d7c3ac",
+      "session_id": "6a3bd180be494dd560d7c3ac",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    },
+    "s_2df5b2cc9d6e8a::t_0e406c511d09d5": {
+      "tool": "trae",
+      "conversation_id": "6a3bd180be494dd560d7c3ac",
+      "session_id": "6a3bd180be494dd560d7c3ac",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    },
+    "s_2df5b2cc9d6e8a::t_1075cab0e73516": {
+      "tool": "trae",
+      "conversation_id": "6a3bd180be494dd560d7c3ac",
+      "session_id": "6a3bd180be494dd560d7c3ac",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    },
+    "s_2df5b2cc9d6e8a::t_1fc28e1848d69b": {
+      "tool": "trae",
+      "conversation_id": "6a3bd180be494dd560d7c3ac",
+      "session_id": "6a3bd180be494dd560d7c3ac",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    },
+    "s_2df5b2cc9d6e8a::t_271bb9777feda0": {
+      "tool": "trae",
+      "conversation_id": "6a3bd180be494dd560d7c3ac",
+      "session_id": "6a3bd180be494dd560d7c3ac",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    },
+    "s_2df5b2cc9d6e8a::t_2a40b90876e0c8": {
+      "tool": "trae",
+      "conversation_id": "6a3bd180be494dd560d7c3ac",
+      "session_id": "6a3bd180be494dd560d7c3ac",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    },
+    "s_2df5b2cc9d6e8a::t_37204f44c7060d": {
+      "tool": "trae",
+      "conversation_id": "6a3bd180be494dd560d7c3ac",
+      "session_id": "6a3bd180be494dd560d7c3ac",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    },
+    "s_2df5b2cc9d6e8a::t_7d7440db9c12e3": {
+      "tool": "trae",
+      "conversation_id": "6a3bd180be494dd560d7c3ac",
+      "session_id": "6a3bd180be494dd560d7c3ac",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    },
+    "s_2df5b2cc9d6e8a::t_d80627b55384b2": {
+      "tool": "trae",
+      "conversation_id": "6a3bd180be494dd560d7c3ac",
+      "session_id": "6a3bd180be494dd560d7c3ac",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    },
+    "s_2df5b2cc9d6e8a::t_ff4d18503a8d70": {
+      "tool": "trae",
+      "conversation_id": "6a3bd180be494dd560d7c3ac",
+      "session_id": "6a3bd180be494dd560d7c3ac",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    }
+  }
+}
