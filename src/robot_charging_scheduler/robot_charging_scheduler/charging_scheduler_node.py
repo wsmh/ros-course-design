@@ -71,7 +71,7 @@ class ChargingSchedulerNode(Node):
         self.declare_parameter("set_entity_state_service", "/set_entity_state")
         self.declare_parameter("charging_duration_ticks", 5)
         self.declare_parameter("show_battery_dashboard", True)
-        self.declare_parameter("publish_rviz_markers", True)
+        self.declare_parameter("publish_rviz_markers", False)
 
         self.robot_count = int(self.get_parameter("robot_count").value)
         self.low_battery_threshold = float(
@@ -108,6 +108,12 @@ class ChargingSchedulerNode(Node):
         self.tick_count = 0
         self.charging_robot = ChargingRobotState()
         self.robots = self._create_working_robots()
+        self.gazebo_battery_segments: dict[int, Optional[int]] = {
+            robot.robot_id: None for robot in self.robots
+        }
+        self.gazebo_low_warning_visible: dict[int, Optional[bool]] = {
+            robot.robot_id: None for robot in self.robots
+        }
         self.marker_pub = None
         if self.publish_rviz_markers and MarkerArray is not None:
             self.marker_pub = self.create_publisher(
@@ -433,24 +439,44 @@ class ChargingSchedulerNode(Node):
     def _sync_battery_bar(self, robot: RobotState) -> None:
         """Show ordered green battery blocks and a separate low-battery warning."""
         visible_segments = int(math.ceil(self._clamp(robot.battery, 0.0, 100.0) / 10.0))
+        previous_segments = self.gazebo_battery_segments.get(robot.robot_id)
         y = 9.0 - (robot.robot_id - 1) * 0.55
         z = 0.18
 
-        for segment in range(10, 0, -1):
-            if segment > visible_segments:
-                self._set_gazebo_entity_pose(
-                    f"battery_g_r{robot.robot_id}_seg{segment}", -5.0, -5.0, -2.0
-                )
-        for segment in range(1, visible_segments + 1):
-            x = 10.35 + (segment - 1) * 0.14
-            self._set_gazebo_entity_pose(
-                f"battery_g_r{robot.robot_id}_seg{segment}", x, y, z
-            )
+        if previous_segments is None:
+            for segment in range(1, 11):
+                if segment <= visible_segments:
+                    self._show_battery_segment(robot.robot_id, segment, y, z)
+                else:
+                    self._hide_battery_segment(robot.robot_id, segment)
+        elif visible_segments < previous_segments:
+            for segment in range(previous_segments, visible_segments, -1):
+                self._hide_battery_segment(robot.robot_id, segment)
+        elif visible_segments > previous_segments:
+            for segment in range(previous_segments + 1, visible_segments + 1):
+                self._show_battery_segment(robot.robot_id, segment, y, z)
+        self.gazebo_battery_segments[robot.robot_id] = visible_segments
 
-        if robot.battery <= self.low_battery_threshold:
+        low_warning_visible = robot.battery <= self.low_battery_threshold
+        previous_warning_visible = self.gazebo_low_warning_visible.get(robot.robot_id)
+        if previous_warning_visible == low_warning_visible:
+            return
+        if low_warning_visible:
             self._set_gazebo_entity_pose(f"low_warn_r{robot.robot_id}", 9.72, y, z)
         else:
             self._set_gazebo_entity_pose(f"low_warn_r{robot.robot_id}", -5.0, -5.0, -2.0)
+        self.gazebo_low_warning_visible[robot.robot_id] = low_warning_visible
+
+    def _show_battery_segment(
+        self, robot_id: int, segment: int, panel_y: float, panel_z: float
+    ) -> None:
+        """Show one ordered battery segment in the fixed Gazebo dashboard."""
+        x = 10.35 + (segment - 1) * 0.14
+        self._set_gazebo_entity_pose(f"battery_g_r{robot_id}_seg{segment}", x, panel_y, panel_z)
+
+    def _hide_battery_segment(self, robot_id: int, segment: int) -> None:
+        """Hide one battery segment outside the visible Gazebo work area."""
+        self._set_gazebo_entity_pose(f"battery_g_r{robot_id}_seg{segment}", -5.0, -5.0, -2.0)
 
     def _publish_rviz_markers(self) -> None:
         """Publish dynamic text overlays for RViz2."""

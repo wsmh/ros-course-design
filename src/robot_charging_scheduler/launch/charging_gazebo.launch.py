@@ -29,6 +29,8 @@ def generate_launch_description() -> LaunchDescription:
     )
     set_entity_state_service = LaunchConfiguration("set_entity_state_service")
     start_rviz = LaunchConfiguration("start_rviz")
+    timer_period = LaunchConfiguration("timer_period")
+    publish_rviz_markers = LaunchConfiguration("publish_rviz_markers")
 
     scheduler_node = Node(
         package="robot_charging_scheduler",
@@ -39,12 +41,12 @@ def generate_launch_description() -> LaunchDescription:
             {
                 "use_gazebo": True,
                 "robot_count": 6,
-                "timer_period": 2.0,
+                "timer_period": timer_period,
                 "low_battery_threshold": 75.0,
                 "charge_amount_per_visit": 100.0,
                 "charging_duration_ticks": 5,
                 "show_battery_dashboard": True,
-                "publish_rviz_markers": True,
+                "publish_rviz_markers": publish_rviz_markers,
                 "set_entity_state_service": set_entity_state_service,
             }
         ],
@@ -62,6 +64,7 @@ def generate_launch_description() -> LaunchDescription:
         executable="static_transform_publisher",
         name="world_static_tf",
         arguments=["0", "0", "0", "0", "0", "0", "map", "world"],
+        condition=IfCondition(start_rviz),
         output="screen",
     )
 
@@ -69,8 +72,18 @@ def generate_launch_description() -> LaunchDescription:
         [
             DeclareLaunchArgument(
                 "start_rviz",
-                default_value="true",
+                default_value="false",
                 description="Start RViz2 with the MarkerArray display configured.",
+            ),
+            DeclareLaunchArgument(
+                "timer_period",
+                default_value="2.0",
+                description="Simulation period in seconds.",
+            ),
+            DeclareLaunchArgument(
+                "publish_rviz_markers",
+                default_value="false",
+                description="Publish optional RViz2 MarkerArray text overlays.",
             ),
             DeclareLaunchArgument(
                 "set_entity_state_service",
