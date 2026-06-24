@@ -40,8 +40,8 @@ class RobotState:
 class ChargingRobotState:
     """Store the charging robot position and current target."""
 
-    x: float = 0.0
-    y: float = 0.0
+    x: float = 1.0
+    y: float = 1.0
     target_id: Optional[int] = None
     charging_ticks_remaining: int = 0
     moving_to_target: bool = False
@@ -98,6 +98,7 @@ class ChargingSchedulerNode(Node):
         self.tick_count = 0
         self.charging_robot = ChargingRobotState()
         self.robots = self._create_working_robots()
+        self.legacy_battery_models_hidden = False
         self.gazebo_client = None
         if self.use_gazebo:
             if SetEntityState is None:
@@ -394,36 +395,48 @@ class ChargingSchedulerNode(Node):
         self._sync_charging_marker()
 
     def _sync_battery_bar(self, robot: RobotState) -> None:
-        """Show battery level with 10 Gazebo blocks beside each robot."""
-        visible_segments = int(math.ceil(robot.battery / 10.0))
-        active_prefix = (
-            "battery_y" if robot.battery <= self.low_battery_threshold else "battery"
-        )
-        inactive_prefix = "battery" if active_prefix == "battery_y" else "battery_y"
+        """Show battery level with one stable indicator per robot."""
+        self._hide_legacy_battery_segments()
+        battery_ratio = self._clamp(robot.battery / self.full_battery, 0.0, 1.0)
+        x = robot.x - 0.30 + battery_ratio * 0.60
+        y = robot.y
+        z = 0.72
 
-        for segment in range(1, 11):
-            if segment <= visible_segments:
-                x = robot.x - 0.315 + (segment - 1) * 0.07
-                y = robot.y
-                z = 0.72
-            else:
-                x = -5.0
-                y = -5.0
-                z = -2.0
+        if robot.battery <= self.low_battery_threshold:
             self._set_gazebo_entity_pose(
-                f"{active_prefix}_r{robot.robot_id}_seg{segment}", x, y, z
+                f"battery_cursor_r{robot.robot_id}", -5.0, -5.0, -2.0
             )
             self._set_gazebo_entity_pose(
-                f"{inactive_prefix}_r{robot.robot_id}_seg{segment}", -5.0, -5.0, -2.0
+                f"battery_y_r{robot.robot_id}_seg1", x, y, z
+            )
+        else:
+            self._set_gazebo_entity_pose(f"battery_cursor_r{robot.robot_id}", x, y, z)
+            self._set_gazebo_entity_pose(
+                f"battery_y_r{robot.robot_id}_seg1", -5.0, -5.0, -2.0
             )
 
     def _sync_charging_marker(self) -> None:
         """Show or hide the charging marker above the robot being charged."""
         target = self._get_robot(self.charging_robot.target_id)
-        if target is None:
+        if target is None or self.charging_robot.moving_to_target:
             self._set_gazebo_entity_pose("charging_marker", -5.0, -5.0, -2.0)
             return
         self._set_gazebo_entity_pose("charging_marker", target.x, target.y, 0.75)
+
+    def _hide_legacy_battery_segments(self) -> None:
+        """Hide old per-segment battery models once to avoid scattered blocks."""
+        if self.legacy_battery_models_hidden:
+            return
+        for robot_id in range(1, self.robot_count + 1):
+            for segment in range(1, 11):
+                self._set_gazebo_entity_pose(
+                    f"battery_r{robot_id}_seg{segment}", -5.0, -5.0, -2.0
+                )
+                if segment != 1:
+                    self._set_gazebo_entity_pose(
+                        f"battery_y_r{robot_id}_seg{segment}", -5.0, -5.0, -2.0
+                    )
+        self.legacy_battery_models_hidden = True
 
     def _set_gazebo_entity_pose(
         self, entity_name: str, x: float, y: float, z: float

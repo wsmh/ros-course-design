@@ -291,7 +291,7 @@
     <model name="battery_y_r6_seg10"><pose>-5 -5 -2 0 0 0</pose><static>false</static><link name="link"><gravity>false</gravity><visual name="seg"><geometry><box><size>0.055 0.16 0.07</size></box></geometry><material><ambient>1 0.85 0 1</ambient><diffuse>1 0.85 0 1</diffuse></material></visual></link></model>
 
     <model name="charging_robot">
-      <pose>0.8 0.8 0 0 0 0</pose>
+      <pose>1.0 1.0 0 0 0 0</pose>
       <static>false</static>
       <link name="base_link">
         <gravity>false</gravity>
