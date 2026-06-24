@@ -106,9 +106,10 @@ class ChargingSchedulerNode(Node):
         random.seed(random_seed)
 
         self.tick_count = 0
+        self.gazebo_sync_count = 0
         self.charging_robot = ChargingRobotState()
         self.robots = self._create_working_robots()
-        self.gazebo_battery_segments: dict[int, Optional[int]] = {
+        self.gazebo_battery_level: dict[int, Optional[int]] = {
             robot.robot_id: None for robot in self.robots
         }
         self.gazebo_low_warning_visible: dict[int, Optional[bool]] = {
@@ -426,6 +427,8 @@ class ChargingSchedulerNode(Node):
             )
             return
 
+        self.gazebo_sync_count += 1
+        force_battery_refresh = self.gazebo_sync_count <= 8
         self._set_gazebo_entity_pose(
             "charging_robot", self.charging_robot.x, self.charging_robot.y, 0.03
         )
@@ -433,28 +436,54 @@ class ChargingSchedulerNode(Node):
             self._set_gazebo_entity_pose(
                 f"working_robot_{robot.robot_id}", robot.x, robot.y, 0.02
             )
-            self._sync_battery_bar(robot)
+            self._sync_battery_bar(robot, force_refresh=force_battery_refresh)
         self._sync_charging_marker()
 
-    def _sync_battery_bar(self, robot: RobotState) -> None:
+    def _sync_battery_bar(
+        self, robot: RobotState, force_refresh: bool = False
+    ) -> None:
         """Show one continuous battery bar and a separate low-battery warning."""
         visible_level = int(math.ceil(self._clamp(robot.battery, 0.0, 100.0) / 10.0))
-        previous_level = self.gazebo_battery_segments.get(robot.robot_id)
+        previous_level = self.gazebo_battery_level.get(robot.robot_id)
         y = 9.0 - (robot.robot_id - 1) * 0.55
         z = 0.18
 
-        if previous_level is None:
-            self._hide_legacy_battery_segments(robot.robot_id)
-        elif previous_level == visible_level:
+        if previous_level == visible_level:
+            if force_refresh and visible_level > 0:
+                self._show_battery_level(robot.robot_id, visible_level, y, z)
             self._sync_low_battery_warning(robot, y, z)
             return
 
-        if previous_level is not None and previous_level > 0:
+        if previous_level is None:
+            self._hide_battery_pointer(robot.robot_id)
+        elif previous_level > 0:
             self._hide_battery_level(robot.robot_id, previous_level)
         if visible_level > 0:
             self._show_battery_level(robot.robot_id, visible_level, y, z)
-        self.gazebo_battery_segments[robot.robot_id] = visible_level
+        self.gazebo_battery_level[robot.robot_id] = visible_level
         self._sync_low_battery_warning(robot, y, z)
+
+    def _show_battery_level(
+        self, robot_id: int, level: int, panel_y: float, panel_z: float
+    ) -> None:
+        """Show one continuous battery fill level in the fixed Gazebo dashboard."""
+        width = 0.14 * level
+        x = 10.30 + width / 2.0
+        self._set_gazebo_entity_pose(
+            f"battery_fill_r{robot_id}_level{level}", x, panel_y, panel_z
+        )
+
+    def _hide_battery_level(self, robot_id: int, level: int) -> None:
+        """Hide one continuous battery fill level outside the visible area."""
+        self._set_gazebo_entity_pose(
+            f"battery_fill_r{robot_id}_level{level}", -5.0, -5.0, -2.0
+        )
+
+    def _hide_battery_pointer(self, robot_id: int) -> None:
+        """Hide the pointer model left from the slider-style dashboard."""
+        self._set_gazebo_entity_pose(
+            f"battery_pointer_r{robot_id}", -5.0, -5.0, -2.0
+        )
 
     def _sync_low_battery_warning(
         self, robot: RobotState, panel_y: float, panel_z: float
@@ -474,27 +503,14 @@ class ChargingSchedulerNode(Node):
             )
         self.gazebo_low_warning_visible[robot.robot_id] = low_warning_visible
 
-    def _show_battery_level(
-        self, robot_id: int, level: int, panel_y: float, panel_z: float
-    ) -> None:
-        """Show one continuous battery fill level in the fixed Gazebo dashboard."""
-        width = 0.14 * level
-        x = 10.30 + width / 2.0
-        self._set_gazebo_entity_pose(
-            f"battery_fill_r{robot_id}_level{level}", x, panel_y, panel_z
-        )
-
-    def _hide_battery_level(self, robot_id: int, level: int) -> None:
-        """Hide one continuous battery fill level outside the visible area."""
-        self._set_gazebo_entity_pose(
-            f"battery_fill_r{robot_id}_level{level}", -5.0, -5.0, -2.0
-        )
-
-    def _hide_legacy_battery_segments(self, robot_id: int) -> None:
-        """Hide old segmented battery models that can desynchronize in Gazebo."""
+    def _hide_legacy_battery_display(self, robot_id: int) -> None:
+        """Hide old segmented and level-based battery models once at startup."""
         for segment in range(1, 11):
             self._set_gazebo_entity_pose(
                 f"battery_g_r{robot_id}_seg{segment}", -5.0, -5.0, -2.0
+            )
+            self._set_gazebo_entity_pose(
+                f"battery_fill_r{robot_id}_level{segment}", -5.0, -5.0, -2.0
             )
 
     def _publish_rviz_markers(self) -> None:
