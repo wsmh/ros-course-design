@@ -41,6 +41,7 @@ def generate_launch_description() -> LaunchDescription:
                 "charge_amount_per_visit": 100.0,
                 "charging_duration_ticks": 5,
                 "show_battery_dashboard": True,
+                "publish_rviz_markers": True,
                 "set_entity_state_service": set_entity_state_service,
             }
         ],

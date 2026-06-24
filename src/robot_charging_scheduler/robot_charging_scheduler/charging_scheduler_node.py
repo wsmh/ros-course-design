@@ -10,6 +10,12 @@ import rclpy
 from rclpy.node import Node
 
 try:
+    from visualization_msgs.msg import Marker, MarkerArray
+except ModuleNotFoundError:
+    Marker = None
+    MarkerArray = None
+
+try:
     from gazebo_msgs.msg import EntityState
     from gazebo_msgs.srv import SetEntityState
 except ModuleNotFoundError:
@@ -65,6 +71,7 @@ class ChargingSchedulerNode(Node):
         self.declare_parameter("set_entity_state_service", "/set_entity_state")
         self.declare_parameter("charging_duration_ticks", 5)
         self.declare_parameter("show_battery_dashboard", True)
+        self.declare_parameter("publish_rviz_markers", True)
 
         self.robot_count = int(self.get_parameter("robot_count").value)
         self.low_battery_threshold = float(
@@ -86,6 +93,9 @@ class ChargingSchedulerNode(Node):
         self.show_battery_dashboard = bool(
             self.get_parameter("show_battery_dashboard").value
         )
+        self.publish_rviz_markers = bool(
+            self.get_parameter("publish_rviz_markers").value
+        )
 
         if self.robot_count <= 5:
             raise ValueError("robot_count must be greater than 5 for this assignment")
@@ -98,6 +108,11 @@ class ChargingSchedulerNode(Node):
         self.tick_count = 0
         self.charging_robot = ChargingRobotState()
         self.robots = self._create_working_robots()
+        self.marker_pub = None
+        if self.publish_rviz_markers and MarkerArray is not None:
+            self.marker_pub = self.create_publisher(
+                MarkerArray, "robot_charging_markers", 10
+            )
         self.gazebo_client = None
         if self.use_gazebo:
             if SetEntityState is None:
@@ -394,6 +409,8 @@ class ChargingSchedulerNode(Node):
 
     def _sync_gazebo_models(self) -> None:
         """Synchronize all simulated robot states to Gazebo models."""
+        self._publish_rviz_markers()
+
         if not self.use_gazebo or self.gazebo_client is None:
             return
 
@@ -410,35 +427,107 @@ class ChargingSchedulerNode(Node):
             self._set_gazebo_entity_pose(
                 f"working_robot_{robot.robot_id}", robot.x, robot.y, 0.02
             )
-            self._set_gazebo_entity_pose(
-                f"robot_label_r{robot.robot_id}", robot.x, robot.y, 0.55
-            )
             self._sync_battery_bar(robot)
         self._sync_charging_marker()
 
     def _sync_battery_bar(self, robot: RobotState) -> None:
-        """Show battery level on fixed dashboard blocks from left to right."""
+        """Show ordered green battery blocks and a separate low-battery warning."""
         visible_segments = int(math.ceil(self._clamp(robot.battery, 0.0, 100.0) / 10.0))
         y = 9.0 - (robot.robot_id - 1) * 0.55
         z = 0.18
-        active_prefix = (
-            "battery_y" if robot.battery <= self.low_battery_threshold else "battery_g"
-        )
-        inactive_prefix = "battery_g" if active_prefix == "battery_y" else "battery_y"
 
-        for segment in range(1, 11):
-            if segment <= visible_segments:
-                x = 10.35 + (segment - 1) * 0.14
+        for segment in range(10, 0, -1):
+            if segment > visible_segments:
                 self._set_gazebo_entity_pose(
-                    f"{active_prefix}_r{robot.robot_id}_seg{segment}", x, y, z
+                    f"battery_g_r{robot.robot_id}_seg{segment}", -5.0, -5.0, -2.0
                 )
-            else:
-                self._set_gazebo_entity_pose(
-                    f"{active_prefix}_r{robot.robot_id}_seg{segment}", -5.0, -5.0, -2.0
-                )
+        for segment in range(1, visible_segments + 1):
+            x = 10.35 + (segment - 1) * 0.14
             self._set_gazebo_entity_pose(
-                f"{inactive_prefix}_r{robot.robot_id}_seg{segment}", -5.0, -5.0, -2.0
+                f"battery_g_r{robot.robot_id}_seg{segment}", x, y, z
             )
+
+        if robot.battery <= self.low_battery_threshold:
+            self._set_gazebo_entity_pose(f"low_warn_r{robot.robot_id}", 9.72, y, z)
+        else:
+            self._set_gazebo_entity_pose(f"low_warn_r{robot.robot_id}", -5.0, -5.0, -2.0)
+
+    def _publish_rviz_markers(self) -> None:
+        """Publish dynamic text overlays for RViz2."""
+        if self.marker_pub is None or Marker is None or MarkerArray is None:
+            return
+
+        marker_array = MarkerArray()
+        for robot in self.robots:
+            marker_array.markers.append(self._make_robot_text_marker(robot))
+            marker_array.markers.append(self._make_battery_panel_text_marker(robot))
+        marker_array.markers.append(self._make_charging_robot_text_marker())
+        self.marker_pub.publish(marker_array)
+
+    def _make_robot_text_marker(self, robot: RobotState) -> Marker:
+        """Create one RViz text marker that follows a working robot."""
+        marker = self._new_text_marker("robot_battery_text", robot.robot_id)
+        marker.pose.position.x = robot.x
+        marker.pose.position.y = robot.y
+        marker.pose.position.z = 0.95
+        marker.scale.z = 0.28
+        marker.text = f"R{robot.robot_id}\\n{robot.battery:.0f}%"
+        self._set_marker_battery_color(marker, robot.battery)
+        return marker
+
+    def _make_battery_panel_text_marker(self, robot: RobotState) -> Marker:
+        """Create one fixed RViz text marker for the battery dashboard."""
+        marker = self._new_text_marker("battery_panel_text", 100 + robot.robot_id)
+        marker.pose.position.x = 11.0
+        marker.pose.position.y = 9.0 - (robot.robot_id - 1) * 0.55
+        marker.pose.position.z = 0.55
+        marker.scale.z = 0.22
+        marker.text = f"R{robot.robot_id}: {robot.battery:5.1f}%"
+        self._set_marker_battery_color(marker, robot.battery)
+        return marker
+
+    def _make_charging_robot_text_marker(self) -> Marker:
+        """Create one RViz text marker for the charging robot status."""
+        marker = self._new_text_marker("charging_robot_text", 1000)
+        marker.pose.position.x = self.charging_robot.x
+        marker.pose.position.y = self.charging_robot.y
+        marker.pose.position.z = 1.05
+        marker.scale.z = 0.25
+        if self.charging_robot.target_id is None:
+            marker.text = "Charging\\nIdle"
+        elif self.charging_robot.moving_to_target:
+            marker.text = f"Charging\\n-> R{self.charging_robot.target_id}"
+        else:
+            marker.text = f"Charging\\nR{self.charging_robot.target_id}"
+        marker.color.r = 1.0
+        marker.color.g = 0.45
+        marker.color.b = 0.0
+        marker.color.a = 1.0
+        return marker
+
+    def _new_text_marker(self, namespace: str, marker_id: int) -> Marker:
+        """Create a common RViz TEXT_VIEW_FACING marker in the world frame."""
+        marker = Marker()
+        marker.header.frame_id = "world"
+        marker.header.stamp = self.get_clock().now().to_msg()
+        marker.ns = namespace
+        marker.id = marker_id
+        marker.type = Marker.TEXT_VIEW_FACING
+        marker.action = Marker.ADD
+        marker.pose.orientation.w = 1.0
+        marker.color.a = 1.0
+        return marker
+
+    def _set_marker_battery_color(self, marker: Marker, battery: float) -> None:
+        """Set marker color according to battery urgency."""
+        if battery <= self.low_battery_threshold:
+            marker.color.r = 1.0
+            marker.color.g = 0.85
+            marker.color.b = 0.0
+        else:
+            marker.color.r = 0.0
+            marker.color.g = 1.0
+            marker.color.b = 0.0
 
     def _sync_charging_marker(self) -> None:
         """Show or hide the charging marker above the robot being charged."""

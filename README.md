@@ -38,7 +38,7 @@ priority = 当前电量 + 预计剩余移动次数 * 2.0 + 充电机器人到目
 
 ```bash
 sudo apt update
-sudo apt install ros-humble-gazebo-ros-pkgs python3-colcon-common-extensions
+sudo apt install ros-humble-gazebo-ros-pkgs ros-humble-rviz2 python3-colcon-common-extensions
 ```
 
 如果你使用其他 ROS2 版本，把 `humble` 替换成你的版本名。
@@ -77,14 +77,38 @@ ros2 launch robot_charging_scheduler charging_gazebo.launch.py
 - 蓝色机器人 `working_robot_1` 到 `working_robot_6` 会在 10x10 区域中随机移动。
 - 地面灰色网格表示地图格子，机器人每轮只会上下左右移动一格。
 - 机器人每次成功移动一格消耗 1%-2% 电量，不能走出边界，也不能走到已被占用的格子。
-- 每个机器人在 Gazebo 中带有几何序号标识：1 个白色小块代表 R1，2 个白色小块代表 R2，以此类推，避免 Gazebo 文字渲染导致黑屏。
+- 每个机器人模型内部带有几何序号标识：1 个白色小块代表 R1，2 个白色小块代表 R2，以此类推，编号会跟随机器人一起移动。
 - 地图右侧有固定电量面板，每行左侧也用相同数量的白色小块标识 R1 到 R6，每行有 10 个电量块。
 - 电量块按顺序显示：第 1 格到第 10 格从左到右依次代表 10%-100%。移动耗电时从右往左扣除，充电时从左往右补充，不会随机扣除中间位置。
-- 电量高于低电量阈值时电量块为绿色，低于阈值时整行已显示电量块变为黄色。电量面板固定不动，比让电量块跟随机器人更稳定。
+- 电量块只使用绿色显示实际电量；低于阈值时，该行左侧额外亮起黄色告警灯，避免同一行电量块出现黄绿混合。
 - 终端会实时显示每个机器人的当前电量百分比，例如 `R1: 83.2%`，并带有文字电量条。
 - 橙红色 `charging_robot` 会每轮沿网格移动一格，逐步前往当前最需要充电的机器人相邻格，不会瞬移。
 - 充电时目标机器人上方会出现黄色充电标识，默认持续 5 轮。
 - 终端会输出每轮电量、充电目标、移动距离和充电前后电量。
+
+## RViz2 动态文字显示
+
+Gazebo Classic 不再使用 `<text>` 文字模型，因为不同版本容易出现黑屏、文字不跟随或不渲染。项目会额外发布 RViz2 Marker 话题：
+
+```bash
+/robot_charging_markers
+```
+
+如果需要动态文字电量显示，另开一个终端：
+
+```bash
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+rviz2
+```
+
+在 RViz2 中：
+
+1. `Fixed Frame` 设置为 `world`。
+2. 添加 `MarkerArray` 显示项。
+3. 话题选择 `/robot_charging_markers`。
+
+RViz2 中会显示每个机器人上方的 `R1 83%` 动态文字，以及右侧固定电量文本面板。Gazebo 负责物理/图形仿真，RViz2 负责稳定动态文字显示。
 
 如果 Gazebo 中看不到机器人，或者只看到一个物体，通常是旧的 world/launch 文件仍在 `install/` 中。执行下面命令清理重建：
 
@@ -159,6 +183,7 @@ ros2 run robot_charging_scheduler charging_scheduler --ros-args \
 - `use_gazebo`：是否同步 Gazebo 模型位置，launch 文件中默认开启。
 - `charging_duration_ticks`：一次充电持续多少轮，默认 5。
 - `show_battery_dashboard`：是否在终端显示实时电量表，默认开启。
+- `publish_rviz_markers`：是否发布 RViz2 动态文字 Marker，默认开启。
 
 ## 主要文件
 
