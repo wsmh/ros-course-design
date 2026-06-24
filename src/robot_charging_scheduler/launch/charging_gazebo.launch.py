@@ -15,52 +15,6 @@ from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
 
-def _spawn_working_robot(
-    package_share: str, robot_id: int, x: float, y: float
-) -> Node:
-    """Create a Gazebo spawn node for one working robot."""
-    model_file = os.path.join(package_share, "models", "working_robot", "model.sdf")
-    return Node(
-        package="gazebo_ros",
-        executable="spawn_entity.py",
-        arguments=[
-            "-entity",
-            f"working_robot_{robot_id}",
-            "-file",
-            model_file,
-            "-x",
-            f"{x:.2f}",
-            "-y",
-            f"{y:.2f}",
-            "-z",
-            "0.0",
-        ],
-        output="screen",
-    )
-
-
-def _spawn_charging_robot(package_share: str) -> Node:
-    """Create a Gazebo spawn node for the charging robot."""
-    model_file = os.path.join(package_share, "models", "charging_robot", "model.sdf")
-    return Node(
-        package="gazebo_ros",
-        executable="spawn_entity.py",
-        arguments=[
-            "-entity",
-            "charging_robot",
-            "-file",
-            model_file,
-            "-x",
-            "0.80",
-            "-y",
-            "0.80",
-            "-z",
-            "0.0",
-        ],
-        output="screen",
-    )
-
-
 def generate_launch_description() -> LaunchDescription:
     """Build the launch description for the Gazebo simulation."""
     package_share = get_package_share_directory("robot_charging_scheduler")
@@ -72,23 +26,6 @@ def generate_launch_description() -> LaunchDescription:
         [models_path, os.environ.get("GAZEBO_MODEL_PATH", "")]
     )
     set_entity_state_service = LaunchConfiguration("set_entity_state_service")
-
-    initial_positions = [
-        (2.0, 2.0),
-        (5.0, 2.0),
-        (8.0, 2.0),
-        (2.0, 7.0),
-        (5.0, 7.0),
-        (8.0, 7.0),
-    ]
-    spawn_actions = [TimerAction(period=3.0, actions=[_spawn_charging_robot(package_share)])]
-    for index, (x, y) in enumerate(initial_positions, start=1):
-        spawn_actions.append(
-            TimerAction(
-                period=3.0 + index * 0.4,
-                actions=[_spawn_working_robot(package_share, index, x, y)],
-            )
-        )
 
     scheduler_node = Node(
         package="robot_charging_scheduler",
@@ -121,7 +58,6 @@ def generate_launch_description() -> LaunchDescription:
                 PythonLaunchDescriptionSource(gazebo_launch),
                 launch_arguments={"world": world_file, "verbose": "false"}.items(),
             ),
-            *spawn_actions,
-            TimerAction(period=8.0, actions=[scheduler_node]),
+            TimerAction(period=3.0, actions=[scheduler_node]),
         ]
     )

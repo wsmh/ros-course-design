@@ -74,7 +74,7 @@ ros2 launch robot_charging_scheduler charging_gazebo.launch.py
 - 橙红色 `charging_robot` 会移动到当前最需要充电的机器人位置。
 - 终端会输出每轮电量、充电目标、移动距离和充电前后电量。
 
-如果 Gazebo 中只看到一个橙色物体，通常是旧 launch 文件仍在 `install/` 中，或者多个机器人一开始重叠在原点。执行下面命令清理重建：
+如果 Gazebo 中看不到机器人，或者只看到一个物体，通常是旧的 world/launch 文件仍在 `install/` 中。执行下面命令清理重建：
 
 ```bash
 rm -rf build install log
@@ -83,6 +83,8 @@ colcon build
 source install/setup.bash
 ros2 launch robot_charging_scheduler charging_gazebo.launch.py
 ```
+
+当前版本已经把 6 个工作机器人和 1 个充电机器人直接写入 world 文件，不再依赖 `spawn_entity.py` 动态插入模型。Gazebo 打开后，即使调度节点还没有启动，也应该能看到 6 个蓝色机器人和 1 个橙色机器人。
 
 如果终端一直输出 `等待 Gazebo /set_entity_state 服务就绪`，打开另一个终端检查 Gazebo 状态服务：
 
