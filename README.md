@@ -19,7 +19,7 @@
 
 1. 未等待充电的工作机器人在网格上随机选择上、下、左、右方向移动一格，并随机消耗 1%-2% 电量。
 2. 筛选需要充电的机器人：
-   - 电量低于阈值，默认 75%；
+   - 电量低于阈值，默认 40%；
    - 或者预计剩余可移动次数小于等于 45 次。
    - 已经没电的机器人仍会参与调度，并被最高优先级抢救。
 3. 对候选机器人计算优先级分数：
@@ -77,8 +77,8 @@ ros2 launch robot_charging_scheduler charging_gazebo.launch.py
 - 蓝色机器人 `working_robot_1` 到 `working_robot_6` 会在 10x10 区域中随机移动。
 - 地面灰色网格表示地图格子，机器人每轮只会上下左右移动一格。
 - 机器人每次成功移动一格消耗 1%-2% 电量，不能走出边界，也不能走到已被占用的格子。
-- 每个机器人模型内部带有几何序号标识：1 个白色小块代表 R1，2 个白色小块代表 R2，以此类推，编号会跟随机器人一起移动。
-- 地图右侧有固定电量面板，每行左侧也用相同数量的白色小块标识 R1 到 R6。
+- 每个机器人模型内部带有几何序号标识：1 个暗红色小块代表 R1，2 个暗红色小块代表 R2，以此类推，编号会跟随机器人一起移动。
+- 地图右侧有固定电量面板，每行左侧也用相同数量的暗红色小块标识 R1 到 R6。
 - 电量显示使用连续绿色条形：条越长表示电量越高，条越短表示电量越低。
 - 低于阈值时，该行左侧额外亮起黄色告警灯，避免同一行电量出现黄绿混合。
 - 电量面板每个机器人同一时间只显示 1 条完整电量条，不再使用 10 个零散小块，避免中间断格。
@@ -193,7 +193,7 @@ Ctrl + C
 ```bash
 ros2 run robot_charging_scheduler charging_scheduler --ros-args \
   -p robot_count:=8 \
-  -p low_battery_threshold:=75.0 \
+  -p low_battery_threshold:=40.0 \
   -p charge_amount_per_visit:=100.0 \
   -p random_seed:=3
 ```
@@ -201,7 +201,7 @@ ros2 run robot_charging_scheduler charging_scheduler --ros-args \
 参数说明：
 
 - `robot_count`：工作机器人数量，必须大于 5。
-- `low_battery_threshold`：低电量阈值，默认 75。
+- `low_battery_threshold`：低电量阈值，默认 40。
 - `full_battery`：满电电量，默认 100。
 - `charge_amount_per_visit`：每次服务给目标机器人补充的电量，默认 100。
 - `work_area_size`：二维工作区域边长。

@@ -61,7 +61,7 @@ class ChargingSchedulerNode(Node):
         super().__init__("charging_scheduler_node")
 
         self.declare_parameter("robot_count", 6)
-        self.declare_parameter("low_battery_threshold", 75.0)
+        self.declare_parameter("low_battery_threshold", 40.0)
         self.declare_parameter("full_battery", 100.0)
         self.declare_parameter("charge_amount_per_visit", 100.0)
         self.declare_parameter("work_area_size", 10.0)

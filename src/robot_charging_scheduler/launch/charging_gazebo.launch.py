@@ -42,7 +42,7 @@ def generate_launch_description() -> LaunchDescription:
                 "use_gazebo": True,
                 "robot_count": 6,
                 "timer_period": timer_period,
-                "low_battery_threshold": 75.0,
+                "low_battery_threshold": 40.0,
                 "charge_amount_per_visit": 100.0,
                 "charging_duration_ticks": 5,
                 "show_battery_dashboard": True,
